@@ -1,0 +1,30 @@
+{
+    "name": "degather-platform",
+    "workspaces": [
+        "packages/web-client",
+        "packages/node-cli"
+    ],
+    "author": {
+        "email": "gholami.arshia@outlook.com",
+        "name": "Arshia Gholami",
+        "url": "https://www.linkedin.com/in/arshiagholami"
+    },
+    "contributors": [
+        {
+            "email": "lie.carrick1234@gmail.com",
+            "name": "Carrick",
+            "url": "https://www.linkedin.com/in/carrick-1a1206210"
+        },
+        {
+            "email": "fongbrandon123@gmail.com",
+            "name": "Brandon Fong",
+            "url": "https://github.com/hyperionftw"
+        }
+    ],
+    "bugs": {
+        "email": "gholami.arshia@outlook.com",
+        "url": "https://github.com/arshia-gh/deGather-platform/issues"
+    },
+    "icon": "./assets/images/logo.png",
+    "private": "true"
+}

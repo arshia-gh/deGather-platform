@@ -1,0 +1,36 @@
+{
+    "recommendations": [
+        // code style extenstions
+        "EditorConfig.EditorConfig",
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "aaron-bond.better-comments",
+        "mike-co.import-sorter",
+        "zengxingxin.sort-js-object-keys",
+        // language extentions
+        "redhat.vscode-yaml",
+        "DavidAnson.vscode-markdownlint",
+        "mikestead.dotenv",
+        "ecmel.vscode-html-css",
+        "ms-vscode.js-debug-nightly",
+        "ms-vscode.vscode-typescript-next",
+        "christian-kohler.npm-intellisense",
+        "csstools.postcss",
+        "austenc.tailwind-docs",
+        "bradlc.vscode-tailwindcss",
+        // angular extentions
+        "johnpapa.angular-essentials",
+        "alexiv.vscode-angular2-files",
+        "Angular.ng-template",
+        // firebase
+        "jsayol.firebase-explorer",
+        "toba.vsfire",
+        // git
+        "mhutchie.git-graph",
+        "eamodio.gitlens",
+        // general extentions
+        "streetsidesoftware.code-spell-checker",
+        // docker
+        "ms-azuretools.vscode-docker",
+    ]
+}
