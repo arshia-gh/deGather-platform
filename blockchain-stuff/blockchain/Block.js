@@ -14,7 +14,7 @@ export class Block{
         this.hash = this.calculateHash();
     }
     calculateHash(){
-        var blockData = this.index+this.previousHash+this.timestamp+JSON.stringify(this.data);
+        var blockData = this.previousHash+this.timestamp+JSON.stringify(this.transactions);
         const hash = crypto.createHash("sha256").update(blockData).digest("base64");
         return hash.toString();
     }
@@ -22,21 +22,25 @@ export class Block{
         this.timestamp = Date.now().toString();
     }
     createResponse(surveyID,answers,responseUserID,privateKey){
-       var newResponse = new Response(answers,surveyID+"-"+responseUserID,responseUserID,privateKey);
-       deGatherMempool.responsesCache.push([surveyID,newResponse]);
+        var blockData = answers+surveyID+responseUserID;
+        const hashID = crypto.createHash("sha256").update(blockData).digest("base64");
+        var newResponse = new Response(answers,hashID.toString(),responseUserID,privateKey);
+        deGatherMempool.responsesCache.push([surveyID,newResponse]);
+        return newResponse;
     }
     createNewSurvey(authorID,fee,totalRewards,targetParticipant,onceOnly,privateKey){
         var surveyID = this.findSurveyID();
         var newSurvey = new Survey(surveyID,authorID,fee,totalRewards,targetParticipant,onceOnly,privateKey);
         deGatherMempool.transactionCache.push(newSurvey);
+        return newSurvey;
     }
     findSurveyID(){
-        for(let i=0;i<deGatherMempool.transactionCache.length;i++){
+        for(let i=deGatherMempool.transactionCache.length-1;i>=0;i--){
             if(deGatherMempool.transactionCache[i].responses.length==0){
                 return deGatherMempool.transactionCache[i].surveyID+1;
             }
         }
-        return this.findLastSurveyCreated(deGatherBlockchain.getLatestBlock());
+        return this.findLastSurveyCreated(deGatherBlockchain.pendingBlock);
     }
     findLastSurveyCreated(block){
         //base case where if current block is genesis block then no more
@@ -50,9 +54,18 @@ export class Block{
                     return block.transactions[i].surveyID+1;//set current survey id to last created survey id +1
                 }
             }
+            if(block === deGatherBlockchain.pendingBlock){
+                return this.findLastSurveyCreated(deGatherBlockchain.getLatestBlock());
+            }else{
+                return this.findLastSurveyCreate(block.getPrevBlock());
+            }
+            
+        }
+        if(block === deGatherBlockchain.pendingBlock){
+            return this.findLastSurveyCreated(deGatherBlockchain.getLatestBlock());
+        }else{
             return this.findLastSurveyCreate(block.getPrevBlock());
         }
-        return this.findLastSurveyCreate(block.getPrevBlock());
     }
     getPrevBlock(){
         return this.deGatherBlockchain[this.index-1];

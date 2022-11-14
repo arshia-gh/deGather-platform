@@ -1,13 +1,18 @@
 import crypto from "crypto"
 import { deGatherBlockchain } from "./Block.js";
 
+const currentNodeUrl = process.argv[3];
+
+
 export class Mempool{
     constructor(){
         this.transactionCache = [];
         this.responsesCache = [];
         this.verifiedTransactions = [];
+        this.currentNodeUrl = currentNodeUrl;
+        this.networkNodes = [];
     }
-    verifyAllTransaction(){
+    verifyAllPendingTransactions(){
         //verify all created surveys
         while(this.transactionCache.length!=0){
             var surveyData = this.transactionCache[0].surveyID+
@@ -15,8 +20,7 @@ export class Mempool{
             this.transactionCache[0].fee+
             this.transactionCache[0].totalRewards+
             this.transactionCache[0].targetParticipant+
-            this.transactionCache[0].onceOnly+
-            this.transactionCache[0].responses;
+            this.transactionCache[0].onceOnly;
             const verify = crypto.createVerify('SHA256');
             verify.write(surveyData);
             verify.end();
@@ -25,57 +29,38 @@ export class Mempool{
             }
             this.transactionCache.splice(0,1);
         }
-        /*for(let i=0;i<this.transactionCache.length;i++){
-            var surveyData = this.transactionCache[i].surveyID+
-            this.transactionCache[i].authorID+
-            this.transactionCache[i].fee+
-            this.transactionCache[i].totalRewards+
-            this.transactionCache[i].targetParticipant+
-            this.transactionCache[i].onceOnly+
-            this.transactionCache[i].responses;
-            const verify = crypto.createVerify('SHA256');
-            verify.write(surveyData);
-            verify.end();
-            if(verify.verify(this.transactionCache[i].authorID, this.transactionCache[i].authorSignature, 'hex')){
-                this.verifiedTransactions.push(this.transactionCache[i]);
-                this.transactionCache.splice(i,1);
-            }else{
-                this.transactionCache.splice(i,1);
-            }
-        }*/
         //verify all pending responses
-        for(let i=0;i<this.responsesCache.length;i++){
-            var responseData = this.responsesCache[i][1].answers+
-            this.responsesCache[i][1].responseID+
-            this.responsesCache[i][1].responseUserID;
+        while(this.responsesCache.length!=0){
+            var responseData = this.responsesCache[0][1].answers+
+            this.responsesCache[0][1].responseID+
+            this.responsesCache[0][1].responseUserID;
             const verify = crypto.createVerify('SHA256');
             verify.write(responseData);
             verify.end();
-            if(verify.verify(this.responsesCache[i][1].responseUserID, this.responsesCache[i][1].responseSignature, 'hex')){
+            if(verify.verify(this.responsesCache[0][1].responseUserID, this.responsesCache[0][1].responseSignature, 'hex')){
                 var counter = 0;
                 //finding same survey in validated survey the just push
-                for(let j=0;j<this.verifiedTransactions.length;j++){
+                for(let i=0;i<this.verifiedTransactions.length;i++){
                     counter++;
-                    if(this.verifiedTransactions[j].surveyID==this.responsesCache[i][0]){
-                        this.verifiedTransactions[j].responses.push(this.responsesCache[i][1]);
-                        this.responsesCache.splice(i,1);
+                    if(this.verifiedTransactions[i].surveyID==this.responsesCache[0][0]){
+                        this.verifiedTransactions[i].responses.push(this.responsesCache[0][1]);
+                        this.responsesCache.splice(0,1);
                         break;
                     }
                 }
                 //if not founded then find that survey creation and create then push the response
                 if(counter==this.verifiedTransactions.length){
-                    var theSurvey = this.findExistingSurveyByID(this.responsesCache[i][0]);
-                    theSurvey.responses.push(this.responsesCache[i][1]);
+                    var theSurvey = this.findExistingSurveyByID(this.responsesCache[0][0],deGatherBlockchain.pendingBlock);
+                    theSurvey.responses.push(this.responsesCache[0][1]);
                     this.verifiedTransactions.push(theSurvey);
-                    this.responsesCache.splice(i,1);
+                    this.responsesCache.splice(0,1);
                 }
             }else{
-                this.responsesCache.splice(i,1);
+                this.responsesCache.splice(0,1);
             }
         }
     }
-    findExistingSurveyByID(surveyID){
-        var block = deGatherBlockchain.getLatestBlock();
+    findExistingSurveyByID(surveyID,block){
         if(block.index==0){
             return null;
         }
@@ -85,15 +70,25 @@ export class Mempool{
                     return block.transactions[i];
                 }
             }
-            return this.findExistingSurvey(block.getPrevBlock());
+            if(block = deGatherBlockchain.pendingBlock){
+                return this.findExistingSurveyByID(surveyID,deGatherBlockchain.getLatestBlock());
+            }else{
+                return this.findExistingSurveyByID(block.getPrevBlock());
+            }
         }
-        return this.findExistingSurvey(block.getPrevBlock());
+        if(block = deGatherBlockchain.pendingBlock){
+            return this.findExistingSurveyByID(surveyID,deGatherBlockchain.getLatestBlock());
+        }else{
+            return this.findExistingSurveyByID(block.getPrevBlock());
+        }
     }
     fillPendingBlock(){
-        deGatherBlockchain.pendingBlock.transactions = this.verifiedTransactions;
+        var verifiedTransactions = this.verifiedTransactions;
+        deGatherBlockchain.consensusMempool.push(this.verifiedTransactions);
         this.verifiedTransactions = [];
+        return verifiedTransactions;
     }
 }
 
-export var deGatherMempool = new Mempool();
+export const deGatherMempool = new Mempool();
 

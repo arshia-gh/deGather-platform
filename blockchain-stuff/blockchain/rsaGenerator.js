@@ -10,3 +10,5 @@ export const { privateKey, publicKey } = crypto.generateKeyPairSync('rsa', {
       format: 'pem',
     }
   });
+  export const privateKeyBase64 = Buffer.from(privateKey).toString('base64');
+  export const publicKeyBase64 = Buffer.from(publicKey).toString('base64');
