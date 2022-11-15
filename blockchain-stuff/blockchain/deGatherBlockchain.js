@@ -14,6 +14,35 @@ export class Blockchain{
     getLatestBlock(){
         return this.chain[this.chain.length-1];
     }
+    findFormByID(formID){
+        let founded = null;
+        deGatherBlockchain.chain.forEach(block=>{
+            if(block.transactions != "Genesis Block"){
+                block.transactions.forEach(transaction=>{
+                    if(transaction.id == formID){
+                        founded=transaction;
+                    }
+                });
+            }
+        });
+        return founded;
+    }
+    findFormByAuthorID(authorID){
+        let founded = [];
+        deGatherBlockchain.chain.forEach(block=>{
+            if(block.transactions != "Genesis Block"){
+                block.transactions.forEach(transaction=>{
+                    if(transaction.authorID == authorID){
+                        founded.push(transaction);
+                    }
+                });
+            }
+        });
+        return founded;
+    }
+    getLength(){
+        return deGatherBlockchain.chain.length;
+    }
     createPendingBlock(){
         var newBlock = new Block(this.getLatestBlock().index+1,[],this.getLatestBlock().hash);
         this.pendingBlock = newBlock;

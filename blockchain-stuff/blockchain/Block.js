@@ -1,7 +1,7 @@
 import crypto from "crypto"
 
 import {Blockchain} from "./deGatherBlockchain.js";
-import { Survey } from "./Survey.js";
+import { Form } from "./Form.js";
 import { deGatherMempool } from "./Mempool.js";
 import { Response } from "./Response.js";
 
@@ -21,19 +21,30 @@ export class Block{
     setTimeStamp(){
         this.timestamp = Date.now().toString();
     }
+    /*
     createResponse(surveyID,answers,responseUserID,privateKey){
         var blockData = answers+surveyID+responseUserID;
         const hashID = crypto.createHash("sha256").update(blockData).digest("base64");
         var newResponse = new Response(answers,hashID.toString(),responseUserID,privateKey);
         deGatherMempool.responsesCache.push([surveyID,newResponse]);
         return newResponse;
+    }*/
+    createNewForm(authorID,authorPublicKey,fee,totalRewards,participantsCountTarget,onceOnly,authorPrivateKey){
+        var formID = this.generateFormID();
+        var newForm = new Form(formID,authorID,authorPublicKey,fee,totalRewards,participantsCountTarget,onceOnly,authorPrivateKey);
+        deGatherBlockchain.pendingBlock.transactions.push(newForm);
+        deGatherBlockchain.mintBlock();
+        return newForm;
     }
-    createNewSurvey(authorID,fee,totalRewards,targetParticipant,onceOnly,privateKey){
-        var surveyID = this.findSurveyID();
-        var newSurvey = new Survey(surveyID,authorID,fee,totalRewards,targetParticipant,onceOnly,privateKey);
-        deGatherMempool.transactionCache.push(newSurvey);
-        return newSurvey;
+    generateFormID(){
+        if(deGatherBlockchain.getLatestBlock().index==0){
+            return 0;
+        }else{
+            return deGatherBlockchain.getLatestBlock().transactions[0].id +1;
+        }
     }
+
+    /*
     findSurveyID(){
         for(let i=deGatherMempool.transactionCache.length-1;i>=0;i--){
             if(deGatherMempool.transactionCache[i].responses.length==0){
@@ -66,7 +77,7 @@ export class Block{
         }else{
             return this.findLastSurveyCreate(block.getPrevBlock());
         }
-    }
+    }*/
     getPrevBlock(){
         return this.deGatherBlockchain[this.index-1];
     }

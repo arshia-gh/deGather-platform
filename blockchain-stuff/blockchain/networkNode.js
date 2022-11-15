@@ -16,9 +16,69 @@ const client= Redis.createClient();
 function parseKey(base64Key){
     return Buffer.from(base64Key, "base64").toString("ascii");
 }
+app.get("/forms",function(req,res){
+    let formList = [];
+    deGatherBlockchain.chain.forEach(block=>{
+        if(block.index>0){
+            block.transactions.forEach(transaction=>{
+                formList.push(transaction);
+            });
+        }
+    });
+    if(formList.length==0){
+        return res.json({
+            note : "Blockchain Empty",
+        });
+    }else{
+        return res.json({
+            note : "All Form Retrieved",
+            formList : formList
+        });
+    }
+});
+app.post("/forms",function(req,res){
+    const bodyParam = req.body;
+    let formCreated = deGatherBlockchain.pendingBlock.createNewForm(
+        bodyParam.authorID,parseKey(bodyParam.publicKey),bodyParam.fee,bodyParam.totalRewards,
+        bodyParam.participantsCountTarget,bodyParam.onceOnly,parseKey(bodyParam.privateKey));
+    return res.json({
+        note : "Form Created!",
+        form : formCreated
+    });
+});
+app.get("/:authorID/forms",function(req,res){
+    let authorID = req.params.authorID;
+    let authorForms = deGatherBlockchain.findFormByAuthorID(authorID);
+    if(authorForms.length==0){
+        return res.json({
+            note : "No form founded by this author"
+        });
+    }else{
+        return res.json({
+            note : "Forms Founded",
+            form : authorForms
+        });
+    }
+});
+app.get("/forms/:formID",function(req,res){
+    let formID = req.params.formID;
+    let theForm = deGatherBlockchain.findFormByID(formID);
+    if(theForm==null){
+        return res.json({
+            note : "Form not founded"
+        });
+    }else{
+        return res.json({
+            note : "Form founded",
+            form : theForm
+        });
+    }
+});
+
 app.get('/blockchain', function (req, res) {
     res.send(deGatherBlockchain);
   });
+  /*
 app.get('/mempool', function (req, res) {
     res.send(deGatherMempool);
   });
@@ -189,7 +249,7 @@ app.post("/register-node-bulk",function(req,res){
         }
     });
     return res.json({ note: 'Bulk registration successful.' });
-});
+});*/
 app.listen(port,function(){
     console.log(`Listening on port ${port}...`);
 });
