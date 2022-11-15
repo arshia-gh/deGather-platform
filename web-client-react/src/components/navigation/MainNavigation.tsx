@@ -1,4 +1,4 @@
-import { Button, Modal, Navbar as FbNavbar } from 'flowbite-react';
+import { Button, Modal, Navbar } from 'flowbite-react';
 import { useState } from 'react';
 import LoginForm from '../forms/LoginForm';
 import SignUpForm from '../forms/SignUpForm';
@@ -8,17 +8,17 @@ const logoUrl = new URL(
     import.meta.url
 ).href
 
-function Navbar() {
+function MainNavigation() {
     const [showSignUp, setShowSignUp] = useState(false);
     const [showLogin, setShowLogin] = useState(false);
 
     return <>
-        <FbNavbar
+        <Navbar
             fluid={true}
             rounded={true}
             className="mx-auto max-w-screen-xl"
         >
-            <FbNavbar.Brand href="/">
+            <Navbar.Brand href="/">
                 <img
                     src={logoUrl}
                     className="mr-3 h-6 sm:h-9 bg-slate-200 rounded-md p-1 sm:p-2"
@@ -30,7 +30,7 @@ function Navbar() {
                 <span className="self-center whitespace-nowrap text-lg font-semibold text-blue-600">
                     Gather
                 </span>
-            </FbNavbar.Brand>
+            </Navbar.Brand>
             <div className="flex md:order-2 gap-2">
                 <Button outline={true} gradientDuoTone="cyanToBlue" onClick={() => setShowLogin(true)}>
                     Login
@@ -38,23 +38,23 @@ function Navbar() {
                 <Button gradientMonochrome="info" onClick={() => setShowSignUp(true)}>
                     Sign Up
                 </Button>
-                <FbNavbar.Toggle />
+                <Navbar.Toggle />
             </div>
-            <FbNavbar.Collapse>
-                <FbNavbar.Link
+            <Navbar.Collapse>
+                <Navbar.Link
                     href="/navbars"
                     active={true}
                 >
                     Home
-                </FbNavbar.Link>
-                <FbNavbar.Link href="/navbars">
+                </Navbar.Link>
+                <Navbar.Link href="/navbars">
                     About
-                </FbNavbar.Link>
-                <FbNavbar.Link href="/navbars">
+                </Navbar.Link>
+                <Navbar.Link href="/navbars">
                     Contact
-                </FbNavbar.Link>
-            </FbNavbar.Collapse>
-        </FbNavbar>
+                </Navbar.Link>
+            </Navbar.Collapse>
+        </Navbar>
         <Modal
             show={showSignUp}
             size="xl"
@@ -78,4 +78,4 @@ function Navbar() {
     </>
 }
 
-export default Navbar;
+export default MainNavigation;

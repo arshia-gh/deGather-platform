@@ -1,18 +1,22 @@
-import './App.css'
+import { 
+  RouterProvider,
+  createBrowserRouter, 
+  createRoutesFromElements, 
+  Route 
+} from 'react-router-dom';
+import HomePage from './pages/HomePage';
+import RootLayout from './pages/RootLayout';
 
-import { Modal } from 'flowbite-react';
-
-import SignUpForm from './components/forms/SignUpForm';
-import MainBanner from './components/header/MainBanner';
-import Navbar from './components/navbar/Navbar'
+const router = createBrowserRouter(
+  createRoutesFromElements(
+    <Route path='/' element={<RootLayout />}>
+      <Route index element={<HomePage />} />
+    </Route>
+  )
+)
 
 export function App() {
-  return <>
-    <header>
-      <Navbar />
-      <MainBanner />
-    </header>
-  </>
+  return <RouterProvider router={router} />
 }
 
 export default App;

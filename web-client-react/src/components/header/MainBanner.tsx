@@ -22,12 +22,12 @@ function MainBanner() {
                     A trustless, reliable, and transparent solution all of your data gathering needs
                 </p>
 
-                <div className="mt-8 flex flex-wrap lg:justify-start justify-center gap-4">
+                <div className="mt-8 flex flex-wrap items-center lg:justify-start justify-center gap-3">
                     <Button gradientDuoTone="cyanToBlue">
                         Get Started
                     </Button>
 
-                    <Button outline={true} color="dark">
+                    <Button color="dark">
                         Why Decentralized?
                     </Button>
                 </div>
