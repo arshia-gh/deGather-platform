@@ -2,7 +2,7 @@ import MainBanner from "../components/header/MainBanner"
 
 function HomePage() {
     return <>
-        <MainBanner />
+        <MainBanner/>
     </>
 }
 

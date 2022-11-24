@@ -1,7 +1,9 @@
-import { Button, Modal, Navbar } from 'flowbite-react';
-import { useState } from 'react';
-import LoginForm from '../forms/LoginForm';
-import SignUpForm from '../forms/SignUpForm';
+import { Button, Navbar } from 'flowbite-react';
+
+import { useNavigate } from 'react-router-dom';
+import { useAuthState } from "react-firebase-hooks/auth";
+import { signOut } from 'firebase/auth';
+import { auth } from '../../firebase';
 
 const logoUrl = new URL(
     '../../assets/degather-transparent-icon-logo.png',
@@ -9,8 +11,8 @@ const logoUrl = new URL(
 ).href
 
 function MainNavigation() {
-    const [showSignUp, setShowSignUp] = useState(false);
-    const [showLogin, setShowLogin] = useState(false);
+    const [user, loading, error] = useAuthState(auth)
+    const navigate = useNavigate()
 
     return <>
         <Navbar
@@ -31,50 +33,44 @@ function MainNavigation() {
                     Gather
                 </span>
             </Navbar.Brand>
-            <div className="flex md:order-2 gap-2">
-                <Button outline={true} gradientDuoTone="cyanToBlue" onClick={() => setShowLogin(true)}>
-                    Login
-                </Button>
-                <Button gradientMonochrome="info" onClick={() => setShowSignUp(true)}>
-                    Sign Up
-                </Button>
+            <div className="flex gap-2 md:order-2">
+                {!user ? <>
+                    <Button
+                        outline={true}
+                        gradientDuoTone="cyanToBlue"
+                        onClick={() => navigate('/login')}
+                    >
+                        Login
+                    </Button>
+                    <Button gradientMonochrome="info" onClick={() => navigate('/sign-up')}>
+                        Sign Up
+                    </Button> </> :
+                    <Button
+                        color="dark"
+                        onClick={() => signOut(auth)}
+                    >
+                        Logout
+                    </Button>
+                }
                 <Navbar.Toggle />
+
             </div>
             <Navbar.Collapse>
                 <Navbar.Link
-                    href="/navbars"
+                    href='/'
                     active={true}
                 >
                     Home
                 </Navbar.Link>
-                <Navbar.Link href="/navbars">
+                <Navbar.Link href="#">
                     About
                 </Navbar.Link>
-                <Navbar.Link href="/navbars">
+                <Navbar.Link href="#">
                     Contact
                 </Navbar.Link>
             </Navbar.Collapse>
         </Navbar>
-        <Modal
-            show={showSignUp}
-            size="xl"
-            popup={true}
-            onClose={() => setShowSignUp(false)}>
-            <Modal.Header />
-            <Modal.Body>
-                <SignUpForm />
-            </Modal.Body>
-        </Modal>
-        <Modal
-            show={showLogin}
-            size="lg"
-            popup={true}
-            onClose={() => setShowLogin(false)}>
-            <Modal.Header />
-            <Modal.Body>
-                <LoginForm />
-            </Modal.Body>
-        </Modal>
+
     </>
 }
 

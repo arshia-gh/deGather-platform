@@ -1,4 +1,7 @@
 import { Button } from "flowbite-react";
+import { useAuthState } from "react-firebase-hooks/auth";
+import { useNavigate } from "react-router-dom";
+import { auth } from "../../firebase";
 
 const heroImage = new URL(
     '../../assets/landing-hero-img.jpg',
@@ -6,6 +9,9 @@ const heroImage = new URL(
 )
 
 function MainBanner() {
+    const navigate = useNavigate()
+    const [user] = useAuthState(auth)
+
     return (
         <section
             className="mx-auto max-w-screen-xl px-4 py-10 flex flex-col items-center lg:flex-row gap-8"
@@ -23,9 +29,9 @@ function MainBanner() {
                 </p>
 
                 <div className="mt-8 flex flex-wrap items-center lg:justify-start justify-center gap-3">
-                    <Button gradientDuoTone="cyanToBlue">
+                    { !user && <Button gradientDuoTone="cyanToBlue" onClick={() => navigate('/login')}>
                         Get Started
-                    </Button>
+                    </Button> }
 
                     <Button color="dark">
                         Why Decentralized?
