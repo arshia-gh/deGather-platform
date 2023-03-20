@@ -1,0 +1,7 @@
+{
+    "name": "de-gather",
+    "private": true,
+    "workspaces": [
+        "packages/*"
+    ]
+}

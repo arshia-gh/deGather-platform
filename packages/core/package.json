@@ -1,0 +1,5 @@
+{
+    "name": "@de-gather/core",
+    "description": "Core blockchain implementation for de-gather project",
+    "version": "0.1.0"
+}

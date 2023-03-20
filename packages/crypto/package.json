@@ -1,0 +1,13 @@
+{
+    "name": "@de-gather/crypto",
+    "description": "A collection of crypto functions for the de-gather platform",
+    "version": "0.1.0",
+    "devDependencies": {
+        "@tsconfig/node18": "^1.0.1",
+        "ts-node": "^10.9.1",
+        "typescript": "^5.0.2"
+    },
+    "dependencies": {
+        "bs58": "^5.0.0"
+    }
+}

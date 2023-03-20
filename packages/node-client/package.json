@@ -1,0 +1,5 @@
+{
+    "name": "@de-gather/node-client",
+    "description": "Node client and validator for the de-gather project",
+    "version": "0.1.0"
+}
