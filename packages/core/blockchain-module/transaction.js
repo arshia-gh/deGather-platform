@@ -1,16 +1,17 @@
 import crypto from "crypto"
-import { Form } from "./forms";
+import { Form } from "./forms.js";
 
 export class Transaction{
-    constructor(sender,receiver,amount,data="",authorPrivateKey) {
-        this.sender = sender;
-        this.receiver = receiver;
+    constructor(senderAddress,receiverAddress,amount,data="",authorPrivateKey,senderPublicKey) {
+        this.senderAddress = senderAddress;
+        this.receiverAddress = receiverAddress;
         this.creditAmount = amount;
         this.timestamp = new Date.now().toString();
         this.data = data;
         this.txID = generateID();
+        this.senderPublicKey = senderPublicKey;
         const sign = crypto.createSign('SHA256');
-        var transactionData = this.sender+this.receiver+this.creditAmount+this.timestamp+JSON.stringify(this.data)+this.txID;
+        var transactionData = this.sender+this.receiver+this.creditAmount+this.timestamp+JSON.stringify(this.data)+this.txID+this.senderPublicKey;
         sign.write(transactionData);
         sign.end();
         const signature = sign.sign(authorPrivateKey, 'hex');

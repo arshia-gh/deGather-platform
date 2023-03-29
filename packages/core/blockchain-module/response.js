@@ -1,15 +1,22 @@
 import crypto from "crypto"
 
 export class Response{
-    constructor(answers,responseID,responseUserID,privateKey){
+    constructor(formId,answers,responseID,publicKey,privateKey){
+        this.formId = formId
         this.answers = answers;
+        this.responsePublicKey = publicKey;
         this.responseID = responseID;
-        this.responseUserID = responseUserID;
+        var responseData = this.formId+JSON.stringify(this.answers)+this.responsePublicKey+this.responseID;
         const sign = crypto.createSign('SHA256');
-        var responseData = this.answers+this.responseID+this.responseUserID;
         sign.write(responseData);
         sign.end();
         const signature = sign.sign(privateKey,'hex');
-        this.responseSignature = signature;
+        this.signature = signature;
+    }
+}
+export class Answer{
+    constructor(questionID,input){
+        this.questionID = questionID;
+        this.input = input;
     }
 }

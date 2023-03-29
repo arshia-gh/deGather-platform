@@ -1,14 +1,14 @@
-import {Block} from "./block.js";
+import {Block} from "../block.js";
 import express from "express";
 import axios from 'axios';
 import Redis from "redis";
-import { Blockchain } from "./blockchain.js";
+import { Blockchain } from "../blockchain.js";
 import {publicIp, publicIpv4, publicIpv6} from 'public-ip';
 
 import * as http from 'http'; //ES 6
-import { Mempool } from "./mempool.js";
-import { Form } from "./forms.js";
-import { Transaction } from "./transaction.js";
+import { Mempool } from "../mempool.js";
+import { Form } from "../forms.js";
+import { Transaction } from "../transaction.js";
 
 export const myNode = express();
 myNode.use(express.json());
@@ -19,10 +19,10 @@ var centralNodeUrl = "localhost";
 var centralNodePort = 8000;
 var theBlockchain = new Blockchain();
 var theMempool = new Mempool();
-var myPort = 9000;
+var myPort = 7000;
 var myNodeUrl = await publicIpv4()+":"+myPort;
 var myNodeUrlOffline = "localhost:"+myPort;
-var stake = 0;
+
 var connected = false;
 
 var registeredNetwork = [myNodeUrlOffline];
@@ -148,34 +148,6 @@ myNode.get('/mempool', function (req, res) {
     res.send(theMempool);
 });
 
-myNode.post("/submitVerifiedMempool",function(req,res){
-    if(stake!=0){
-        var options = {
-            host: centralNodeUrl,
-            port: centralNodePort,
-            path: '/collectVerifiedMempool',
-            method: 'POST',
-            headers: { 
-                "verifiedMempool": theMempool.verifiedTransactions,
-                "stake": stake,
-            },
-          };
-        http.request(options, function (res) {
-            res.setEncoding('utf8');
-            res.on("data", function (chunk) {
-                if (res.statusCode == 200) {
-                    theMempool.verifiedTransactions = [];
-                }
-            }); 
-        }).end();
-        console.log("Verified Mempool Sended");
-    }
-})
-
-export function stakePOS(amount){
-    stake = amount;
-}
-
 export async function joinValidator(){
     var options = {
         host: centralNodeUrl,
@@ -225,7 +197,6 @@ export async function joinValidator(){
         });
     }).end();
 }
-
 
 
 export function checkMempool(){

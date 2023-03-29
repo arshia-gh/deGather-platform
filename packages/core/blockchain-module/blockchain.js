@@ -25,4 +25,7 @@ export class Blockchain{
         this.chain.push(this.pendingBlock);
         this.createPendingBlock();
     }
+    fillPendingBlock(transactions){
+        this.pendingBlock.transactions = transactions;
+    }
 }
