@@ -24,6 +24,7 @@ var inactiveNetwork = [];
 
 var consensusMempool = [];
 var consensusStake = [];
+var consensusMempoolOwner =[];
 
 function putInactive(){
     console.log("Check Inactive...");
@@ -181,8 +182,10 @@ myNode.post('/broadcastForm', function (req, res) {
 myNode.post('/collectVerifiedMempool', function (req, res) {
     const verifiedMempool = req.headers.verifiedmempool;
     const stake = req.headers.stake;
+    const owner = req.headers.owner;
     consensusMempool.push(verifiedMempool);
     consensusStake.push(stake);
+    consensusMempoolOwner.push(owner);
     res.send("All Mempool Collected");
 });
 
@@ -204,11 +207,50 @@ function collectAllMempool(){
 function consensusTransaction(){
     var consensusResult = [];
     //logic
-    var transactions = [];
-    consensusMempool.forEach(element => {
-        consensusMempool.transactionCache 
-    });
-    deGatherBlockchain.pendingBlock.transactions = consensusResult;
+    var transactions = [deGatherMempool.verifiedTransactions];
+    var transactionCount = [];
+    var ownerViolationRate = [];
+    for (var i=0;i<consensusMempoolOwner.length;i++){
+        ownerViolationRate.push(0);
+    }
+    for(var i=0;i<deGatherMempool.verifiedTransactions.length;i++){
+        transactionCount.push(0);
+    }
+    for(var i=0;i<consensusMempool.length;i++){
+        consensusMempool[i].forEach(transaction => {
+            if(transactions.indexOf(transaction)!=-1){
+                transactionCount[transactions.indexOf(transaction)] +=1;
+            }else{
+                transactions.push(transaction);
+                transactionCount.push(1);
+            }
+        });
+    }
+    for(var i=0;i<transactions.length;i++){
+        if(transactionCount[i]>(registeredNetwork.length-1)/2){
+            consensusResult.push(transactions[i]);
+        }else if(transactionCount[i]<=(registeredNetwork.length-1)/10){
+            var ownerIndex = findTransactionOwner(transactions[i]);
+            ownerViolationRate[ownerIndex] += 1;
+        }
+    }
+    for(var i=0;i<ownerViolationRate.length;i++){
+        if(ownerViolationRate[i]/(consensusMempool[i].length)*100 >= 20 ){
+            //give all the stake as the transaction fee as reward to others validator
+        }
+    }
+    deGatherBlockchain.fillPendingBlock(consensusResult);
+    sendPendingAndMintBlock();
+}
+
+function findTransactionOwner(transactionArgs){
+    for(var i=0;i<consensusMempool.length;i++){
+        consensusMempool[i].forEach(transaction => {
+            if(transactionArgs==transaction){
+                return i;
+            }
+        });
+    }
 }
 
 function sendPendingAndMintBlock(){
@@ -216,10 +258,10 @@ function sendPendingAndMintBlock(){
         registeredNetwork.forEach(node=>{
             if(node != centralNodeUrlOffline){
                 const requestOptions ={
-                    url: "http:"+ node + "/newFormPendingTransaction",
+                    url: "http:"+ node + "/newFormPendingBlock",
                     method:"POST",
                     data : {
-                        transaction : transactionForm,
+                        pendingBlockTransaction : consensusResult, 
                     }
                 };
                 requestPromises.push(axios(requestOptions));
@@ -227,7 +269,7 @@ function sendPendingAndMintBlock(){
         })
         Promise.all(requestPromises).then(data=>{
             return res.json({
-                note : "Form created and broadcasted successfully",
+                note : "New block creation instructed!",
                 code:0,
             });
         });

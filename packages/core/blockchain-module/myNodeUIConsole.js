@@ -3,7 +3,6 @@ import promptSync from 'prompt-sync';
 import {joinValidator,stakePOS} from "./mynode.js"
 const prompt = promptSync();
 
-
 var input = "";
 while(input.toString()!="quit"){
     input = prompt("DeGather > ");
@@ -16,7 +15,7 @@ while(input.toString()!="quit"){
             stakePOS(staked);
             console.log("Staked Amount set : "+staked);
         }else{
-            console.log("Staked Amount not Valid!")
+            console.log("Staked Amount not Valid!");
         }
     }
 }

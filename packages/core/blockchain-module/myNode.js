@@ -148,6 +148,13 @@ myNode.get('/mempool', function (req, res) {
     res.send(theMempool);
 });
 
+myNode.post("/newFormPendingBlock",function(req,res){
+    var consensusTransaction = req.body.pendingBlockTransaction;
+    theBlockchain.fillPendingBlock(consensusTransaction);
+    theBlockchain.mintBlock();
+    console.log("New Block Created index : "+theBlockchain.getLatestBlock().index);
+});
+
 myNode.post("/submitVerifiedMempool",function(req,res){
     if(stake!=0){
         var options = {
@@ -158,6 +165,7 @@ myNode.post("/submitVerifiedMempool",function(req,res){
             headers: { 
                 "verifiedMempool": theMempool.verifiedTransactions,
                 "stake": stake,
+                "owner": myNodeUrlOffline,
             },
           };
         http.request(options, function (res) {
