@@ -1,6 +1,6 @@
 
 import promptSync from 'prompt-sync';
-import {joinValidator,stakePOS} from "./mynode.js"
+import {joinValidator,stakePOS} from "./myNode.js"
 const prompt = promptSync();
 
 var input = "";

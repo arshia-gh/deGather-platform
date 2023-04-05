@@ -9,11 +9,13 @@ import * as http from 'http'; //ES 6
 import { Mempool } from "../mempool.js";
 import { Form } from "../forms.js";
 import { Transaction } from "../transaction.js";
+import bodyParser from "body-parser";
 
 export const myNode = express();
-myNode.use(express.json());
-myNode.use(express.urlencoded({extended:false}));
-
+myNode.use(express.json());             // for application/json
+myNode.use(express.urlencoded({ extended: true }));
+myNode.use(bodyParser.json());
+myNode.use(bodyParser.urlencoded({ extended: true }));
 
 var centralNodeUrl = "localhost";
 var centralNodePort = 8000;
@@ -22,7 +24,7 @@ var theMempool = new Mempool();
 var myPort = 7000;
 var myNodeUrl = await publicIpv4()+":"+myPort;
 var myNodeUrlOffline = "localhost:"+myPort;
-
+var stake = 0;
 var connected = false;
 
 var registeredNetwork = [myNodeUrlOffline];
@@ -148,6 +150,43 @@ myNode.get('/mempool', function (req, res) {
     res.send(theMempool);
 });
 
+myNode.post("/newFormPendingBlock",function(req,res){
+    var consensusTransaction = req.body.pendingBlockTransaction;
+    theBlockchain.fillPendingBlock(consensusTransaction);
+    theBlockchain.mintBlock();
+    console.log("New Block Created index : "+theBlockchain.getLatestBlock().index);
+});
+
+myNode.post("/submitVerifiedMempool",function(req,res){
+    if(true){
+        var options = {
+            host: centralNodeUrl,
+            port: centralNodePort,
+            path: '/collectVerifiedMempool',
+            method: 'POST',
+            data: { 
+                "verifiedMempool": JSON.stringify(theMempool.verifiedTransactions),
+                "stake": stake,
+                "owner": myNodeUrlOffline,
+            },
+          };
+        http.request(options, function (res) {
+            res.setEncoding('utf8');
+            res.on("data", function (chunk) {
+                if (res.statusCode == 200) {
+                    theMempool.verifiedTransactions = [];
+                }
+            }); 
+        }).end();
+        console.log("Verified Mempool Sended");
+    }
+    res.send("work");
+})
+
+export function stakePOS(amount){
+    stake = amount;
+}
+
 export async function joinValidator(){
     var options = {
         host: centralNodeUrl,
@@ -199,6 +238,7 @@ export async function joinValidator(){
 }
 
 
+
 export function checkMempool(){
     var timer = 0;
     var session = false;
@@ -219,11 +259,9 @@ export function checkMempool(){
 
             }
         }
+        theMempool.validateAllTransaction();
     },1000);
 }
 myNode.get('/blockchain', function (req, res) {
     res.send(theBlockchain);
 });
-
-
-

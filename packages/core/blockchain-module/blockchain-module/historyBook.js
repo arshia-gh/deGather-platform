@@ -1,4 +1,4 @@
-import { Form } from "./forms";
+import { Form } from "./forms.js";
 
 export class historyBook{
 

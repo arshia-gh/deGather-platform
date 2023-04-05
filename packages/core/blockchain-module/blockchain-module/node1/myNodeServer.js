@@ -1,4 +1,4 @@
-import {myNode,runLivePing,checkMempool,changePort} from "./mynode.js"
+import {myNode,runLivePing,checkMempool,changePort} from "./myNode.js";
 import promptSync from 'prompt-sync';
 const prompt = promptSync();
 

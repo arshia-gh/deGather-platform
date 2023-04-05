@@ -51,8 +51,8 @@ export class Wallet{
         return publicKey;
     }
     getAddress(){
-        var addressRaw = crypto.createHash("sha256").update(this.privateKey).digest("base64");
-        var address = addressRaw.toString().slice(0, 20);
+        var addressRaw = crypto.createHash("sha256").update(this.getPublicKey(this.privateKey)).digest("base64");
+        var address = addressRaw.toString().slice(0, 40);
         return address;
     }
 }

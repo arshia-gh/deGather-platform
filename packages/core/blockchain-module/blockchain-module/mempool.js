@@ -8,14 +8,17 @@ export class Mempool{
         this.verifiedTransactions = [];
         this.unverifiedTransaction = [];
     }
+    parseKey(base64Key){
+        return Buffer.from(base64Key, "base64").toString("ascii");
+    }
     validateAllTransaction(){
         this.transactionCache.forEach(transaction => {
-            var transactionData = transaction.sender+transaction.receiver+transaction.creditAmount+
+            var transactionData = transaction.senderAddress+transaction.receiverAddress+transaction.creditAmount+
             transaction.timestamp+JSON.stringify(transaction.data)+transaction.txID+transaction.senderPublicKey;
             const verify = crypto.createVerify('SHA256');
             verify.write(transactionData);
             verify.end();
-            if(verify.verify(transaction.senderPublicKey, transaction.signature, 'hex')){
+            if(verify.verify(this.parseKey(transaction.senderPublicKey), transaction.signature, 'hex')){
                 this.verifiedTransactions.push(transaction);   
             }else{
                 this.unverifiedTransaction.push(transaction);  

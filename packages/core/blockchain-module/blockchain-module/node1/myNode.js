@@ -1,18 +1,21 @@
-import {Block} from "./block.js";
+import {Block} from "../block.js";
 import express from "express";
 import axios from 'axios';
 import Redis from "redis";
-import { Blockchain } from "./blockchain.js";
+import { Blockchain } from "../blockchain.js";
 import {publicIp, publicIpv4, publicIpv6} from 'public-ip';
 
 import * as http from 'http'; //ES 6
-import { Mempool } from "./mempool.js";
-import { Form } from "./forms.js";
-import { Transaction } from "./transaction.js";
+import { Mempool } from "../mempool.js";
+import { Form } from "../forms.js";
+import { Transaction } from "../transaction.js";
+import bodyParser from "body-parser";
 
 export const myNode = express();
-myNode.use(express.json());
-myNode.use(express.urlencoded({extended:false}));
+myNode.use(express.json());             // for application/json
+myNode.use(express.urlencoded({ extended: true }));
+myNode.use(bodyParser.json());
+myNode.use(bodyParser.urlencoded({ extended: true }));
 
 
 var centralNodeUrl = "localhost";
@@ -156,14 +159,14 @@ myNode.post("/newFormPendingBlock",function(req,res){
 });
 
 myNode.post("/submitVerifiedMempool",function(req,res){
-    if(stake!=0){
+    if(true){
         var options = {
             host: centralNodeUrl,
             port: centralNodePort,
             path: '/collectVerifiedMempool',
             method: 'POST',
-            headers: { 
-                "verifiedMempool": theMempool.verifiedTransactions,
+            data: { 
+                "verifiedMempool": JSON.stringify(theMempool.verifiedTransactions),
                 "stake": stake,
                 "owner": myNodeUrlOffline,
             },
@@ -178,6 +181,7 @@ myNode.post("/submitVerifiedMempool",function(req,res){
         }).end();
         console.log("Verified Mempool Sended");
     }
+    res.send("work");
 })
 
 export function stakePOS(amount){
@@ -256,6 +260,7 @@ export function checkMempool(){
 
             }
         }
+        theMempool.validateAllTransaction();
     },1000);
 }
 myNode.get('/blockchain', function (req, res) {

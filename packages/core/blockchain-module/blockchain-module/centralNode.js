@@ -7,10 +7,15 @@ import {publicIp, publicIpv4, publicIpv6} from 'public-ip';
 import { Mempool } from "./mempool.js";
 import { Form } from "./forms.js";
 import { Transaction } from "./transaction.js";
+import { historyBook } from "./historyBook.js";
+import bodyParser from "body-parser";
 
 const myNode = express();
-myNode.use(express.json());
-myNode.use(express.urlencoded({extended:false}));
+myNode.use(express.json());             // for application/json
+myNode.use(express.urlencoded({ extended: true }));
+myNode.use(bodyParser.json());
+myNode.use(bodyParser.urlencoded({ extended: true }));
+
 
 var deGatherBlockchain = new Blockchain();
 var deGatherMempool = new Mempool();
@@ -56,7 +61,7 @@ function checkMempool(){
     setInterval(async ()=>{
         if(deGatherMempool.transactionCache.length!=0||deGatherMempool.verifiedTransactions.length!=0){
             if(timer==0&!session){
-                timer = 60*3;
+                timer = 60*1;
                 session = true;
                 console.log("Session Started");
             }
@@ -80,6 +85,14 @@ myNode.get('/mempool', function (req, res) {
 
 myNode.get('/blockchain', function (req, res) {
     res.send(deGatherBlockchain);
+});
+
+myNode.get('/consensus', function (req, res) {
+    res.send({
+        consensusMempool,
+        consensusMempoolOwner,
+        consensusStake,
+    });
 });
 
 myNode.get('/validatorNetwork',function (req, res) {
@@ -153,7 +166,7 @@ myNode.post("/newFormPendingTransaction", function (req, res){
 });
 myNode.post('/broadcastForm', function (req, res) {
     var transactionForm = req.body.transaction;
-    if(transactionForm instanceof Transaction){
+    if(true){
         const requestPromises = [];
         registeredNetwork.forEach(node=>{
             const requestOptions ={
@@ -178,18 +191,24 @@ myNode.post('/broadcastForm', function (req, res) {
         });
     }
 });
-
 myNode.post('/collectVerifiedMempool', function (req, res) {
-    const verifiedMempool = req.headers.verifiedmempool;
-    const stake = req.headers.stake;
-    const owner = req.headers.owner;
+    const verifiedMempool = req.body.verifiedMempool;
+    const stake = req.body.stake;
+    const owner = req.body.owner;
     consensusMempool.push(verifiedMempool);
     consensusStake.push(stake);
     consensusMempoolOwner.push(owner);
-    res.send("All Mempool Collected");
+    console.log(verifiedMempool);
+    consensusTransaction();
 });
 
+myNode.get('/historyBook', function (req, res) {
+    var historyBook = historyBook(deGatherBlockchain);
+    res.send(historyBook);
+})
+var networkConsensus = 0;
 function collectAllMempool(){
+    var requestPromises = [];
     deGatherMempool.validateAllTransaction();
     registeredNetwork.forEach(node=>{
         if(node != centralNodeUrlOffline){
@@ -201,10 +220,14 @@ function collectAllMempool(){
         }
     })
     Promise.all(requestPromises).then(data=>{
-        consensusTransaction();
+        networkConsensus=requestPromises.length;
     });
 }
 function consensusTransaction(){
+    if(consensusMempool.length!=networkConsensus){
+        return;
+    }
+    console.log(JSON.stringify(consensusMempool));
     var consensusResult = [];
     //logic
     var transactions = [deGatherMempool.verifiedTransactions];
@@ -239,8 +262,13 @@ function consensusTransaction(){
             //give all the stake as the transaction fee as reward to others validator
         }
     }
+    
+    deGatherMempool.verifiedTransactions=[];
+    consensusMempool=[];
+    consensusStake=[];
+    consensusMempoolOwner=[];
     deGatherBlockchain.fillPendingBlock(consensusResult);
-    sendPendingAndMintBlock();
+    sendPendingAndMintBlock(consensusResult);
 }
 
 function findTransactionOwner(transactionArgs){
@@ -253,7 +281,7 @@ function findTransactionOwner(transactionArgs){
     }
 }
 
-function sendPendingAndMintBlock(){
+function sendPendingAndMintBlock(consensusResult){
     const requestPromises = [];
         registeredNetwork.forEach(node=>{
             if(node != centralNodeUrlOffline){
