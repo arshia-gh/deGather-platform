@@ -217,6 +217,41 @@ myNode.post("/newFormPendingTransaction", function (req, res){
     deGatherMempool.transactionCache.push(transaction);
     res.send("Transaction added to Mempool");
 });
+
+myNode.post("/newResponsePendingTransaction", function (req, res){
+    var transaction = req.body.transaction;
+    deGatherMempool.transactionCache.push(transaction);
+    res.send("Transaction added to Mempool");
+});
+
+myNode.post('/broadcastResponse', function (req, res) {
+    var transactionResponse = req.body.transaction;
+    if(true){
+        const requestPromises = [];
+        registeredNetwork.forEach(node=>{
+            const requestOptions ={
+                url: "http:"+ node + "/newResponsePendingTransaction",
+                method:"POST",
+                data : {
+                    transaction : transactionResponse,
+                }
+            };
+            requestPromises.push(axios(requestOptions));
+        })
+        Promise.all(requestPromises).then(data=>{
+            return res.json({
+                note : "Response created and broadcasted successfully",
+                code:0,
+            });
+        });
+    }else{
+        res.json({
+            note : "Format not correct!",
+            code:-1,
+        });
+    }
+});
+
 myNode.post('/broadcastForm', function (req, res) {
     var transactionForm = req.body.transaction;
     if(true){

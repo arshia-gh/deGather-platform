@@ -140,6 +140,12 @@ myNode.post("/register-node-bulk",function(req,res){
     return res.json({ note: 'Bulk registration successful.' });
 });
 
+myNode.post("/newResponsePendingTransaction", function (req, res){
+    var transaction = req.body.transaction;
+    deGatherMempool.transactionCache.push(transaction);
+    res.send("Transaction added to Mempool");
+});
+
 myNode.post("/newFormPendingTransaction", function (req, res){
     var transaction = req.body.transaction;
     theMempool.transactionCache.push(transaction);
