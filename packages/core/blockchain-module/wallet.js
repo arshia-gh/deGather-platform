@@ -1,4 +1,5 @@
 import { Form } from "./forms";
+import { Response } from "./response";
 import { Transaction } from "./transaction";
 import crypto from "crypto"
 
@@ -13,12 +14,27 @@ export class Wallet{
         this.responseList = [];
         this.getWalletData(blockchain);
     }
+    constructor(){
+        this.privateKey = "";
+        this.publicKey ="";
+        this.address = "";
+        this.transactionHistory = [];
+        this.nftList = [];
+        this.formList = [];
+        this.responseList = [];
+    }
+    parseKey(base64Key){
+        return Buffer.from(base64Key, "base64").toString("ascii");
+    }
     getWalletData(blockchain){
         blockchain.chain.forEach(block => {
             block.transactions.forEach(transaction => {
                 if(transaction.sender==this.address||transaction.receiver==this.address){
                     this.transactionHistory.push(transaction);
                     if(transaction.sender==this.address&&transaction.data instanceof Form){
+                        this.formList.push(transaction.data);
+                    }
+                    if(transaction.sender==this.address&&transaction.data instanceof Response){
                         this.formList.push(transaction.data);
                     }
                 }

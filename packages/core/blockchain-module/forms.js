@@ -23,6 +23,7 @@ export class Form{
         sign.end();
         const signature = sign.sign(authorPrivateKey, 'hex');
         this.authorSignature = signature;
+        this.responses=[];
     }
 }
 

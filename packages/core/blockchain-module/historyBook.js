@@ -1,6 +1,8 @@
 import { Form } from "./forms.js";
+import { Response } from "./response.js";
+import { Wallet } from "./wallet.js";
 
-export class historyBook{
+export class HistoryBook{
 
     smartContractAddress = "0x00";
 
@@ -10,7 +12,16 @@ export class historyBook{
         this.nftList = [];
         this.userList = [];
         this.smartContractList = [];// static
-        this.loadData(blockchain)
+        this.loadData(blockchain);
+        this.theBlockchain = blockchain;
+    }
+
+    publicWallet(publicKey){
+        var wallet= new Wallet();
+        wallet.publicKey = publicKey;
+        wallet.address = wallet.getAddress();
+        wallet.getWalletData(this.theBlockchain);
+        return wallet;
     }
     loadData(blockchain){
         blockchain.chain.forEach(block => {
@@ -19,6 +30,13 @@ export class historyBook{
                 this.transactionList.push(transaction);
                 if(transaction.data instanceof Form){
                     this.formList.push(transaction.data);
+                }
+                if(transaction.data instanceof Response){
+                    this.formList.forEach(form => {
+                        if(transaction.data.formId==form.id){
+                            form.responses.push(transaction.data);
+                        }
+                    });
                 }
                 //createNewSender or get existing sender
                 if(transaction.sender!=this.smartContractAddress){

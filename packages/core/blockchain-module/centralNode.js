@@ -7,7 +7,7 @@ import {publicIp, publicIpv4, publicIpv6} from 'public-ip';
 import { Mempool } from "./mempool.js";
 import { Form } from "./forms.js";
 import { Transaction } from "./transaction.js";
-import { historyBook } from "./historyBook.js";
+import { HistoryBook, historyBook, historyBook, historyBook } from "./historyBook.js";
 import bodyParser from "body-parser";
 
 const myNode = express();
@@ -78,6 +78,59 @@ function checkMempool(){
         }
     },1000);
 }
+
+myNode.get('/userBalance', function (req, res) {
+    var publicKey = req.body.publicKey;
+    var historyBook = new HistoryBook(deGatherBlockchain);
+    var userPublicWallet = historyBook.publicWallet(publicKey);
+    res.send(userPublicWallet.getCurrentCredit());
+});
+myNode.get('/userPublishedForms', function (req, res) {
+    var publicKey = req.body.publicKey;
+    var historyBook = new HistoryBook(deGatherBlockchain);
+    var userPublicWallet = historyBook.publicWallet(publicKey);
+    res.send(userPublicWallet.formList);
+});
+myNode.get('/userResponses', function (req, res) {
+    var publicKey = req.body.publicKey;
+    var historyBook = new HistoryBook(deGatherBlockchain);
+    var userPublicWallet = historyBook.publicWallet(publicKey);
+    res.send(userPublicWallet.responseList);
+});
+myNode.get('/publishedForms', function (req, res) {
+    var historyBook = new HistoryBook(deGatherBlockchain);
+    res.send(historyBook.formList);
+});
+myNode.get('/formResponses/:id', function (req, res) {
+    var formID = req.body.id;
+    var historyBook = new HistoryBook(deGatherBlockchain);
+    var responses;
+    historyBook.formList.forEach(form => {
+        if(form.id==formID){
+            responses=form.responses;
+        }
+    });
+    res.send(responses);
+});
+myNode.get('/transactions', function (req, res) {
+    var historyBook = new HistoryBook(deGatherBlockchain);
+    res.send(historyBook.transactionList);
+});
+
+myNode.get('/pendingTransactions', function (req, res) {
+    res.send(deGatherMempool.transactionCache);
+});
+myNode.get('/validatorsCount', function (req, res) {
+    res.send(registeredNetwork.length-1);
+});
+myNode.get('/userCount', function (req, res) {
+    var historyBook = new HistoryBook(deGatherBlockchain);
+    res.send(historyBook.userList.length);
+});
+myNode.get('/transactions/:index', function (req, res) {
+    var blockIndex = req.body.index;
+    res.send(deGatherBlockchain.chain[formIndex]);
+});
 
 myNode.get('/mempool', function (req, res) {
     res.send(deGatherMempool);
@@ -227,48 +280,49 @@ function consensusTransaction(){
     if(consensusMempool.length!=networkConsensus){
         return;
     }
-    console.log(JSON.stringify(consensusMempool));
-    var consensusResult = [];
-    //logic
-    var transactions = [deGatherMempool.verifiedTransactions];
-    var transactionCount = [];
-    var ownerViolationRate = [];
-    for (var i=0;i<consensusMempoolOwner.length;i++){
-        ownerViolationRate.push(0);
-    }
-    for(var i=0;i<deGatherMempool.verifiedTransactions.length;i++){
-        transactionCount.push(0);
-    }
-    for(var i=0;i<consensusMempool.length;i++){
-        consensusMempool[i].forEach(transaction => {
-            if(transactions.indexOf(transaction)!=-1){
-                transactionCount[transactions.indexOf(transaction)] +=1;
-            }else{
-                transactions.push(transaction);
-                transactionCount.push(1);
-            }
-        });
-    }
-    for(var i=0;i<transactions.length;i++){
-        if(transactionCount[i]>(registeredNetwork.length-1)/2){
-            consensusResult.push(transactions[i]);
-        }else if(transactionCount[i]<=(registeredNetwork.length-1)/10){
-            var ownerIndex = findTransactionOwner(transactions[i]);
-            ownerViolationRate[ownerIndex] += 1;
-        }
-    }
-    for(var i=0;i<ownerViolationRate.length;i++){
-        if(ownerViolationRate[i]/(consensusMempool[i].length)*100 >= 20 ){
-            //give all the stake as the transaction fee as reward to others validator
-        }
-    }
+    // var consensusResult = [];
+    // //logic
+    // var transactions = [deGatherMempool.verifiedTransactions];
+    // var transactionCount = [];
+    // var ownerViolationRate = [];
+    // for (var i=0;i<consensusMempoolOwner.length;i++){
+    //     ownerViolationRate.push(0);
+    // }
+    // for(var i=0;i<deGatherMempool.verifiedTransactions.length;i++){
+    //     transactionCount.push(0);
+    // }
+    // for(var i=0;i<consensusMempool.length;i++){
+    //     consensusMempool[i].forEach(transaction => {
+    //         if(transactions.indexOf(transaction)!=-1){
+    //             transactionCount[transactions.indexOf(transaction)] +=1;
+    //         }else{
+    //             transactions.push(transaction);
+    //             transactionCount.push(1);
+    //         }
+    //     });
+    // }
+    // for(var i=0;i<transactions.length;i++){
+    //     if(transactionCount[i]>(registeredNetwork.length-1)/2){
+    //         consensusResult.push(transactions[i]);
+    //     }else if(transactionCount[i]<=(registeredNetwork.length-1)/10){
+    //         var ownerIndex = findTransactionOwner(transactions[i]);
+    //         ownerViolationRate[ownerIndex] += 1;
+    //     }
+    // }
+    // for(var i=0;i<ownerViolationRate.length;i++){
+    //     if(ownerViolationRate[i]/(consensusMempool[i].length)*100 >= 20 ){
+    //         //give all the stake as the transaction fee as reward to others validator
+    //     }
+    // }
     
-    deGatherMempool.verifiedTransactions=[];
     consensusMempool=[];
     consensusStake=[];
     consensusMempoolOwner=[];
-    deGatherBlockchain.fillPendingBlock(consensusResult);
-    sendPendingAndMintBlock(consensusResult);
+    deGatherBlockchain.fillPendingBlock(deGatherMempool.verifiedTransactions);
+    sendPendingAndMintBlock(deGatherMempool.verifiedTransactions);
+    deGatherMempool.verifiedTransactions=[];
+    // deGatherBlockchain.fillPendingBlock(consensusResult);
+    // sendPendingAndMintBlock(consensusResult);
 }
 
 function findTransactionOwner(transactionArgs){
