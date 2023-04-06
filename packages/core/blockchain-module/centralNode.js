@@ -7,7 +7,7 @@ import {publicIp, publicIpv4, publicIpv6} from 'public-ip';
 import { Mempool } from "./mempool.js";
 import { Form } from "./forms.js";
 import { Transaction } from "./transaction.js";
-import { HistoryBook, historyBook, historyBook, historyBook } from "./historyBook.js";
+import { HistoryBook } from "./historyBook.js";
 import bodyParser from "body-parser";
 
 const myNode = express();
@@ -61,7 +61,7 @@ function checkMempool(){
     setInterval(async ()=>{
         if(deGatherMempool.transactionCache.length!=0||deGatherMempool.verifiedTransactions.length!=0){
             if(timer==0&!session){
-                timer = 60*1;
+                timer = 60*3;
                 session = true;
                 console.log("Session Started");
             }
@@ -251,8 +251,9 @@ myNode.post('/collectVerifiedMempool', function (req, res) {
     consensusMempool.push(verifiedMempool);
     consensusStake.push(stake);
     consensusMempoolOwner.push(owner);
-    console.log(verifiedMempool);
+    res.send("success");
     consensusTransaction();
+    
 });
 
 myNode.get('/historyBook', function (req, res) {
@@ -350,10 +351,7 @@ function sendPendingAndMintBlock(consensusResult){
             }
         })
         Promise.all(requestPromises).then(data=>{
-            return res.json({
-                note : "New block creation instructed!",
-                code:0,
-            });
+            console.log("New block creation instructed!");
         });
 
     deGatherBlockchain.mintBlock();

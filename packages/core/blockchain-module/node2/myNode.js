@@ -155,6 +155,7 @@ myNode.post("/newFormPendingBlock",function(req,res){
     theBlockchain.fillPendingBlock(consensusTransaction);
     theBlockchain.mintBlock();
     console.log("New Block Created index : "+theBlockchain.getLatestBlock().index);
+    res.send("Success");
 });
 
 myNode.post("/submitVerifiedMempool",function(req,res){
@@ -178,7 +179,7 @@ myNode.post("/submitVerifiedMempool",function(req,res){
                 }
             }); 
         }).end();
-        console.log("Verified Mempool Sended");
+        
     }
     res.send("work");
 })

@@ -23,7 +23,7 @@ export class Blockchain{
         this.pendingBlock.setTimeStamp();
         this.pendingBlock.hash = this.pendingBlock.calculateHash();
         this.chain.push(this.pendingBlock);
-        this.createPendingBlock();
+        this.pendingBlock= this.createPendingBlock();
     }
     fillPendingBlock(transactions){
         this.pendingBlock.transactions = transactions;

@@ -1,6 +1,6 @@
 import { Form } from "./forms.js";
 import { Response } from "./response.js";
-import { Wallet } from "./wallet.js";
+import { PublicWallet, Wallet } from "./wallet.js";
 
 export class HistoryBook{
 
@@ -17,7 +17,7 @@ export class HistoryBook{
     }
 
     publicWallet(publicKey){
-        var wallet= new Wallet();
+        var wallet= new PublicWallet();
         wallet.publicKey = publicKey;
         wallet.address = wallet.getAddress();
         wallet.getWalletData(this.theBlockchain);
