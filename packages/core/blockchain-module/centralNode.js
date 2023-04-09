@@ -9,6 +9,7 @@ import { Form } from "./forms.js";
 import { Transaction } from "./transaction.js";
 import { HistoryBook } from "./historyBook.js";
 import bodyParser from "body-parser";
+import { Response } from "./response.js";
 
 const myNode = express();
 myNode.use(express.json());             // for application/json
@@ -35,7 +36,7 @@ function putInactive(){
     console.log("Check Inactive...");
     inactiveNetwork.forEach(inactiveNode => {
         var index = registeredNetwork.indexOf(inactiveNode);
-        console.log("Node disconnected : "+inactiveNode)
+        console.log("Node disconnected : "+inactiveNode);
         registeredNetwork.splice(index,1);
     });
     inactiveNetwork=[];
@@ -85,22 +86,26 @@ myNode.get('/userBalance', function (req, res) {
     var userPublicWallet = historyBook.publicWallet(publicKey);
     res.send(userPublicWallet.getCurrentCredit());
 });
+
 myNode.get('/userPublishedForms', function (req, res) {
     var publicKey = req.body.publicKey;
     var historyBook = new HistoryBook(deGatherBlockchain);
     var userPublicWallet = historyBook.publicWallet(publicKey);
     res.send(userPublicWallet.formList);
 });
+
 myNode.get('/userResponses', function (req, res) {
     var publicKey = req.body.publicKey;
     var historyBook = new HistoryBook(deGatherBlockchain);
     var userPublicWallet = historyBook.publicWallet(publicKey);
     res.send(userPublicWallet.responseList);
 });
+
 myNode.get('/publishedForms', function (req, res) {
     var historyBook = new HistoryBook(deGatherBlockchain);
     res.send(historyBook.formList);
 });
+
 myNode.get('/formResponses/:id', function (req, res) {
     var formID = req.body.id;
     var historyBook = new HistoryBook(deGatherBlockchain);
@@ -112,6 +117,7 @@ myNode.get('/formResponses/:id', function (req, res) {
     });
     res.send(responses);
 });
+
 myNode.get('/transactions', function (req, res) {
     var historyBook = new HistoryBook(deGatherBlockchain);
     res.send(historyBook.transactionList);
@@ -120,6 +126,7 @@ myNode.get('/transactions', function (req, res) {
 myNode.get('/pendingTransactions', function (req, res) {
     res.send(deGatherMempool.transactionCache);
 });
+
 myNode.get('/validatorsCount', function (req, res) {
     res.send(registeredNetwork.length-1);
 });
@@ -156,6 +163,7 @@ myNode.get('/validatorNetwork',function (req, res) {
     };
     res.send(validatorNetworkState);
 });
+
 myNode.post("/pingActive",function(req,res){
     const newNodeUrl = req.headers.newnodeurl;
     if(registeredNetwork.indexOf(newNodeUrl)!=-1){
@@ -172,6 +180,7 @@ myNode.post("/pingActive",function(req,res){
     }
     res.send("Pinged");
 });
+
 myNode.post("/register-node",function(req,res){
     const newNodeUrl = req.body.newNodeUrl;
     const nodeNotAlrPresent = registeredNetwork.indexOf(newNodeUrl) == -1;
@@ -181,7 +190,6 @@ myNode.post("/register-node",function(req,res){
     }
     return res.json({note : "New Node Registered successfully"});
 });
-
 
 myNode.post('/register-and-broadcast-node', function (req, res) {
     console.log("New node : "+req.headers.newnodeurl);
@@ -212,6 +220,7 @@ myNode.post('/register-and-broadcast-node', function (req, res) {
         return res.json({ note: 'New node registered with the network successfully' });
     });
 });
+
 myNode.post("/newFormPendingTransaction", function (req, res){
     var transaction = req.body.transaction;
     deGatherMempool.transactionCache.push(transaction);
@@ -356,9 +365,10 @@ function consensusTransaction(){
     consensusMempoolOwner=[];
     deGatherBlockchain.fillPendingBlock(deGatherMempool.verifiedTransactions);
     sendPendingAndMintBlock(deGatherMempool.verifiedTransactions);
-    deGatherMempool.verifiedTransactions=[];
     // deGatherBlockchain.fillPendingBlock(consensusResult);
     // sendPendingAndMintBlock(consensusResult);
+    deGatherMempool.verifiedTransactions=[];
+    
 }
 
 function findTransactionOwner(transactionArgs){
@@ -376,7 +386,7 @@ function sendPendingAndMintBlock(consensusResult){
         registeredNetwork.forEach(node=>{
             if(node != centralNodeUrlOffline){
                 const requestOptions ={
-                    url: "http:"+ node + "/newFormPendingBlock",
+                    url: "http:"+ node + "/newPendingBlock",
                     method:"POST",
                     data : {
                         pendingBlockTransaction : consensusResult, 

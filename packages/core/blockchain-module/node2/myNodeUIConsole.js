@@ -1,6 +1,7 @@
 
 import promptSync from 'prompt-sync';
-import {joinValidator,stakePOS} from "./myNode.js"
+import {joinValidator,stakePOS,theBlockchain} from "./myNode.js"
+import { HistoryBook } from '../historyBook.js';
 const prompt = promptSync();
 
 var input = "";
@@ -17,5 +18,8 @@ while(input.toString()!="quit"){
         }else{
             console.log("Staked Amount not Valid!");
         }
+    }else if(input=="historyBook"){
+        var newHistoryBook = new HistoryBook(theBlockchain);
+        console.log(newHistoryBook);
     }
 }

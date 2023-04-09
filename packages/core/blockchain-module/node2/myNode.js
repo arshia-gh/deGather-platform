@@ -19,7 +19,7 @@ myNode.use(bodyParser.urlencoded({ extended: true }));
 
 var centralNodeUrl = "localhost";
 var centralNodePort = 8000;
-var theBlockchain = new Blockchain();
+export var theBlockchain = new Blockchain();
 var theMempool = new Mempool();
 var myPort = 7000;
 var myNodeUrl = await publicIpv4()+":"+myPort;
@@ -142,7 +142,7 @@ myNode.post("/register-node-bulk",function(req,res){
 
 myNode.post("/newResponsePendingTransaction", function (req, res){
     var transaction = req.body.transaction;
-    deGatherMempool.transactionCache.push(transaction);
+    theMempool.transactionCache.push(transaction);
     res.send("Transaction added to Mempool");
 });
 
@@ -156,7 +156,7 @@ myNode.get('/mempool', function (req, res) {
     res.send(theMempool);
 });
 
-myNode.post("/newFormPendingBlock",function(req,res){
+myNode.post("/newPendingBlock",function(req,res){
     var consensusTransaction = req.body.pendingBlockTransaction;
     theBlockchain.fillPendingBlock(consensusTransaction);
     theBlockchain.mintBlock();
